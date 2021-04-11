@@ -75,11 +75,17 @@ def register():
         return json.dumps({"data": False})
     else:
         try:
-            print(data)
+            print(data, type(data))
+            if data["cid"] == '':
+                com = companyinfo.query.filter(companyinfo.cname == data['company']).first()
+                data['cid'] = com.cid if com is not None else ''
             if data["cid"] == '':
                 # 添加新公司，并注册账号
                 com = companyinfo.query.order_by(db.desc(companyinfo.cid)).first()
-                data["cid"] = str(int(com.cid) + 1)
+                if com is None:
+                    data["cid"] = 20210001
+                else:
+                    data["cid"] = str(int(com.cid) + 1)
                 newCom = companyinfo(data["cid"], data["company"])
                 db.session.add(newCom)
                 roleid = "9999"

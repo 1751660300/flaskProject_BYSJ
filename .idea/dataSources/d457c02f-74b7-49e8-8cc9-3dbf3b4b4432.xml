@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <dataSource name="bysj@localhost">
-  <database-model serializer="dbm" dbms="MYSQL" family-id="MYSQL" format-version="4.19">
+  <database-model serializer="dbm" dbms="MYSQL" family-id="MYSQL" format-version="4.20">
     <root id="1">
       <ServerVersion>8.0.15</ServerVersion>
       <DefaultEngine>InnoDB</DefaultEngine>
@@ -907,14 +907,14 @@
       <Host>localhost</Host>
       <ObjectGrants>SUPER
 PERSIST_RO_VARIABLES_ADMIN,SESSION_VARIABLES_ADMIN,SYSTEM_VARIABLES_ADMIN
-SELECT|performance_schema:null
-SELECT|mysql.user:null
+SELECT|performance_schema
+SELECT|mysql.user
 </ObjectGrants>
     </user>
     <user id="287" parent="1" name="mysql.sys">
       <Host>localhost</Host>
-      <ObjectGrants>TRIGGER|sys:null
-SELECT|sys.sys_config:null
+      <ObjectGrants>TRIGGER|sys
+SELECT|sys.sys_config
 </ObjectGrants>
     </user>
     <user id="288" parent="1" name="root">

@@ -28,7 +28,16 @@ def get():
     ro = role.query.filter(role.roleid == data['roleid']).first()
     mts = menutem.query.filter(menutem.menutid == ro.menutid).all()
     print(mts)
+    p2 = [{'mid': '0001', 'isuse': True}, {'mid': '0002', 'isuse': True}, {'mid': '0003', 'isuse': True},
+          {'mid': '0004', 'isuse': True}, {'mid': '0005', 'isuse': True}, {'mid': '0006', 'isuse': True},
+          {'mid': '0007', 'isuse': True}, {'mid': '0008', 'isuse': True}, {'mid': '0009', 'isuse': True},
+          {'mid': '0010', 'isuse': True}]
     for mt in mts:
-        result.append({"mid": mt.mid, "isuse": False if mt.isuse == 'Y' else True})
-    print(result)
-    return json.dumps({"data": result})
+        for i, j in enumerate(p2):
+            print(i,j)
+            if j.get("mid") == mt.mid:
+                p2[i]["isuse"] = False if mt.isuse == 'Y' else True
+                continue
+        # result.append({"mid": mt.mid, "isuse": False if mt.isuse == 'Y' else True})
+    print(p2)
+    return json.dumps({"data": p2})

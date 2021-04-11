@@ -198,9 +198,8 @@ class rticket(db.Model):
         self.transbank = transbank
 
     def getJson(self):
-        return {'title': '单号:{} | 时间:{} 至 {} | 事由:{}... | 合计: {}  |状态: {}'.format(self.id, self.start, self.end,
-                                                                          self.remark if len(
-                                                                              self.remark) < 15 else self.remark[0:15],
+        return {'title': '单号:{} | 姓名:{} | 事由:{}... | 时间:{} 至 {} | 合计: {}  |状态: {}'.format(self.id,self.username ,self.remark if len(
+                                                                              self.remark) < 15 else self.remark[0:15],self.start, self.end,
                                                                           self.sumamt, state.get(self.statue)), 'id': self.id,
                 'startdate': self.start.strftime('%Y-%m-%d'), 'enddate': self.end.strftime('%Y-%m-%d'), 'remark': self.remark, "sumamt": self.sumamt,"state": self.statue,
                 "staylist": [], "carlist": [], "lunchlist": []}

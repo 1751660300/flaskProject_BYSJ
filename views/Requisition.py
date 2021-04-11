@@ -8,54 +8,89 @@ import utils
 import shutil
 
 
-def checkData(data):
+def checkData(data, accinfo):
     result = ''
+    staySum = 0
+    carSum = 0
+    lunchSum = 0
     for key, value in data.items():
-        if key == 'startdate' and value is None:
+        print(key, value)
+        if key == 'startdate' and value == '':
             result += "开始时间为空\n"
-        if key == 'enddate' and value is None:
+        if key == 'enddate' and value == '':
             result += "结束时间为空\n"
-        if key == 'remark' and value is None:
+        if key == 'remark' and value == '':
             result += "出差描述为空\n"
-        if key == 'sumamt' and value is None:
+        if key == 'bank' and value == '':
+            result += "银行卡号为空\n"
+        if key == 'sumamt' and value == '':
             result += "总计为空\n"
         if key == 'staylist':
             for stayid, stay in enumerate(value):
                 for staykey, stayvalue in stay.items():
-                    if staykey == 'detaildate' and stayvalue is None:
+                    if staykey == 'detaildate' and stayvalue == '':
                         result += "第{}项，住宿时间为空\n".format(stayid+1)
-                    if staykey == 'address' and stayvalue is None:
+                    if staykey == 'address' and stayvalue == '':
                         result += "第{}项，住宿地址为空\n".format(stayid+1)
-                    if staykey == 'amount' and stayvalue is None:
-                        result += "第{}项，住宿金额为空\n".format(stayid+1)
-                    if staykey == 'paddress' and stayvalue is None:
+                    if staykey == 'amount':
+                        if stayvalue == '':
+                            result += "第{}项，住宿金额为空\n".format(stayid+1)
+                        else:
+                            staySum = staySum + float(stayvalue)
+                    if staykey == 'paddress' and stayvalue == '':
                         result += "第{}项，住宿票据为空\n".format(stayid+1)
         if key == 'carlist':
             for carindex, carvalue in enumerate(value):
                 for ckey, cvalue in carvalue.items():
-                    if ckey == 'paddress' and cvalue is None:
+                    if ckey == 'paddress' and cvalue == '':
                         result += "第{}项，用车票据为空\n".format(carindex+1)
-                    if ckey == 'detaildate' and cvalue is None:
+                    if ckey == 'detaildate' and cvalue == '':
                         result += "第{}项，用车时间为空\n".format(carindex+1)
-                    if ckey == 'startaddress' and cvalue is None:
+                    if ckey == 'startaddress' and cvalue == '':
                         result += "第{}项，用车起点为空\n".format(carindex+1)
-                    if ckey == 'endaddress' and cvalue is None:
+                    if ckey == 'endaddress' and cvalue == '':
                         result += "第{}项，用车终点为空\n".format(carindex+1)
-                    if ckey == 'amount' and cvalue is None:
-                        result += "第{}项，用车金额为空\n".format(carindex+1)
-                    if ckey == 'paddress' and cvalue is None:
+                    if ckey == 'amount':
+                        if cvalue == '':
+                            result += "第{}项，用车金额为空\n".format(carindex+1)
+                        else:
+                            carSum = carSum + float(cvalue)
+                    if ckey == 'paddress' and cvalue == '':
                         result += "第{}项，用车票据为空\n".format(carindex+1)
         if key == 'lunchlist':
             for luindex, luvalue in enumerate(value):
                 for lkey, lvalue in luvalue.items():
-                    if lkey == 'paddress' and lvalue is None:
+                    if lkey == 'paddress' and lvalue == '':
                         result += "第{}项，用餐票据为空\n".format(luindex+1)
-                    if lkey == 'detaildate' and lvalue is None:
+                    if lkey == 'detaildate' and lvalue == '':
                         result += "第{}项，用餐时间为空\n".format(luindex+1)
-                    if lkey == 'amount' and lvalue is None:
-                        result += "第{}项，用餐金额为空\n".format(luindex+1)
-                    if lkey == 'paddress' and lvalue is None:
+                    if lkey == 'amount':
+                        if lunchSum == '':
+                            result += "第{}项，用餐金额为空\n".format(luindex+1)
+                        else:
+                            lunchSum = lunchSum + float(lvalue)
+                    if lkey == 'paddress' and lvalue == '':
                         result += "第{}项，用餐票据为空\n".format(luindex+1)
+    ro = role.query.filter(role.cid == accinfo["cid"], role.roleid == accinfo["roleid"]).first()
+    u = users.query.filter(users.id == accinfo["id"]).first()
+    if u is None:
+        result += '用户信息未填写\n'
+    else:
+        if u.username == '':
+            result += '用户信息(姓名)未填写\n'
+    print(ro)
+    frs = free.query.filter(free.freeid == ro.freeid).all()
+    for fr in frs:
+        if fr.fname == '住宿':
+            if fr.maxamt < staySum:
+                result += '住宿总费用超支\n'
+        elif fr.fname == '用车':
+            if fr.maxamt < carSum:
+                result += '用车总费用超支\n'
+        elif fr.fname == '用餐':
+            if fr.maxamt < lunchSum:
+                result += '用餐总费用超支\n'
+    print(result, '2222222222222222222222222222')
     return result
 
 
@@ -98,7 +133,8 @@ def saveTicketInfo():
     data = json.loads(data)
     print(data)
     if data["state"] == 2:
-        result = checkData(data)
+        result = checkData(data["ticketdata"], data["userinfo"])
+        print(result, "-------------")
         if result != '':
             return json.dumps({"data": result, "result": 500})
     try:
@@ -114,7 +150,7 @@ def saveTicketInfo():
             rt.end = ticketInfo["date2"][0:10] if ticketInfo["date2"] != '' else ''
             rt.remark = ticketInfo["desc"]
             rt.userid = userInfo["id"]
-            rt.username = u.username
+            rt.username = u.username if u is not None else ''
             rt.cid = userInfo["cid"]
             rt.statue = data["state"]
             rt.sumamt = data["sumamt"],
@@ -189,7 +225,7 @@ def saveTicketInfo():
             newRt = rticket(newRtId, 0, 0, 0, ticketInfo["date1"][0:10] if ticketInfo["date1"] != '' else '',
                             ticketInfo["date2"][0:10] if ticketInfo["date2"] != '' else '', ticketInfo["desc"],
                             userInfo["id"],
-                            u.username, userInfo["cid"], data["state"], data["sumamt"],
+                            u.username if u is not None else '', userInfo["cid"], data["state"], data["sumamt"],
                             utils.getNowTime().split(" ")[0],
                             '', '',
                             ticketInfo["bank"])
@@ -272,8 +308,9 @@ def saveTicketInfo():
                                      lunch["value"]["amount"], paddress)
                 db.session.add(newLunch)
     except Exception as e:
-        print(e)
-        return json.dumps({"result": 500})
+        print(e.args)
+        return json.dumps({"result": 500, "msg": '''保存失败！！！
+        请联系'''})
     db.session.commit()
     return json.dumps({"result": 200})
 
@@ -310,8 +347,8 @@ def getTicketInfo():
                                            "address": st.address, "amount": st.amount,
                                            "paddress": [{"name": st.paddress,
                                                          "url": 'http://127.0.0.1:5000/ticket/getTicketPhoto/' +
-                                                                st.paddress.split('/')[2] if
-                                                         st.paddress != "" else ''}]}} for st in sts]
+                                                                st.paddress.split('/')[2] }]if
+                                                         st.paddress != "" else []}} for st in sts]
             return json.dumps({"data": staydatalist})
         if data["flag"] == "lunch":
             lus = lunchinfo.query.filter(lunchinfo.rticketid == tid).all()
@@ -325,8 +362,8 @@ def getTicketInfo():
                                             "amount": lu.amount,
                                             "paddress": [{"name": lu.paddress,
                                                           "url": 'http://127.0.0.1:5000/ticket/getTicketPhoto/' +
-                                                                 lu.paddress.split('/')[2] if
-                                                          lu.paddress != "" else ''}]}} for lu in lus]
+                                                                 lu.paddress.split('/')[2] }]if
+                                                          lu.paddress != "" else []}} for lu in lus]
             return json.dumps({"data": lunchdatalist})
         if data["flag"] == 'car':
             cas = carinfo.query.filter(carinfo.rticketid == tid).all()
@@ -343,8 +380,8 @@ def getTicketInfo():
                                           "endaddress": ca.eaddress,
                                           "paddress": [{"name": ca.paddress,
                                                         "url": 'http://127.0.0.1:5000/ticket/getTicketPhoto/' +
-                                                               ca.paddress.split('/')[2] if
-                                                        ca.paddress != "" else ''}]}} for ca in cas]
+                                                               ca.paddress.split('/')[2] }]if
+                                                        ca.paddress != "" else [] }} for ca in cas]
             return json.dumps({"data": cardatalist})
     if data["flag"] == "ticket":
         if data["state"] == "0":
@@ -404,10 +441,12 @@ def submitTicket():
     data = request.form
     data = list(data)[0]
     data = json.loads(data)
-    print(str(data))
+    print(str(data), """11111111111111111111111111""")
+    acc = data["data"]
+    data = data["ticket"]
     result = ""
     if data.get("result") != 'F':
-        result = checkData(data)
+        result = checkData(data, acc)
     if result == "":
         rt = rticket.query.filter(rticket.id == data["id"]).first()
         if rt is not None:

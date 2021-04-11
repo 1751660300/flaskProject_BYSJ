@@ -143,7 +143,7 @@ def saveFree():
                 db.session.add(newFree)
     else:
         FR = free.query.filter().order_by(db.desc(free.freeid)).first()
-        newFreeid = str(int(FR.freeid) + 1)
+        newFreeid = str(int(FR.freeid if FR is not None else '0') + 1)
         for i in range(len(data) - 1):
             fr = free.query.filter(free.freeid == newFreeid).order_by(
                 db.desc(free.ford)).first()
@@ -205,7 +205,7 @@ def saveMenuTemp():
                 db.session.add(newMe)
     else:
         MR = menutem.query.filter().order_by(db.desc(menutem.menutid)).first()
-        newmenutid = str(int(MR.menutid) + 1)
+        newmenutid = str(int(MR.menutid if MR is not None else '0') + 1)
         for i in range(len(data) - 1):
             me = menutem.query.filter(menutem.menutid == newmenutid).order_by(
                 db.desc(menutem.mord)).first()

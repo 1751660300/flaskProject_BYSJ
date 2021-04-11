@@ -16,6 +16,7 @@ def getUserinfo():
         jsondata = u.getJson()
     except:
         return json.dumps({})
+    print(jsondata)
     return jsondata
 
 
@@ -60,18 +61,18 @@ def saveBanks():
     data = request.form
     data = list(data)
     data = json.loads(data[0])
-    # print(data)
+    print(data)
     try:
         b = banks.query.filter(banks.id == data.get('id')).all()
-        # print(b, '2222222')
+        print(b, '2222222')
         if len(b) != 0:
             for i, j in enumerate(b):
                 j.bid = data['banks']['卡' + str(i + 1)]
         else:
             b = banks.query.order_by(db.desc(banks.bord)).first()
-            newBord = b.bord
-            print(b.bord)
-            for i, j in data['banks']:
+            newBord = b.bord if b is not None else 0
+            # print(b.bord)
+            for i, j in data['banks'].items():
                 newBord += 1
                 newBanks = banks(newBord, data.get('id'), j)
                 db.session.add(newBanks)
